@@ -7,7 +7,11 @@ from .constants import constants
 
 class Py2048:
     def __init__(self):
-        self.grid = np.zeros((constants.size, constants.size), dtype=int)
+        self.grid = np.zeros(
+            (constants.side_cell_count, constants.side_cell_count), dtype=int
+        )
+        self.score = 0
+        self.best_score = False
 
     def new_number(self, k=1):
         free_pos = list(zip(*np.where(self.grid == 0)))
@@ -17,8 +21,9 @@ class Py2048:
             else:
                 self.grid[pos] = 2
 
-    @staticmethod
-    def _get_nums(grid):
+    def _get_nums(self, grid):
+        from .methods import save_best_score
+
         this_n = grid[grid != 0]
         this_n_sum = []
         skip = False
@@ -28,6 +33,8 @@ class Py2048:
                 continue
             if j != len(this_n) - 1 and this_n[j] == this_n[j + 1]:
                 new_n = this_n[j] * 2
+                self.score += new_n
+                self.best_score = save_best_score(self.score)
                 skip = True
             else:
                 new_n = this_n[j]
@@ -36,7 +43,7 @@ class Py2048:
         return np.array(this_n_sum)
 
     def move(self, move):
-        for i in range(constants.size):
+        for i in range(constants.side_cell_count):
             if move in "lr":
                 this = self.grid[i, :]
             elif move in "ud":
